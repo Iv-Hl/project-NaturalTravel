@@ -37,7 +37,7 @@ export const registerUser = async (req, res) => {
       id: newUser._id,
       name: newUser.name,
       email: newUser.email,
-      avatar: newUser.avatar,
+      avatarUrl: newUser.avatarUrl,
     },
   });
 };

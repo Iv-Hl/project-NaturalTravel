@@ -21,10 +21,20 @@ const userSchema = new mongoose.Schema(
       required: true,
       select: false,
     },
-    avatar: {
+    avatarUrl: {
       type: String,
-      default: "https://ac.go it.global/fullstack/react/default-avatar.jpg",
+      default: "https://ac.goit.global/fullstack/react/default-avatar.jpg",
     },
+    articlesAmount: {
+      type: Number,
+      default: 0,
+    },
+    savedArticles: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Story",
+      },
+    ],
   },
   {
     timestamps: true,

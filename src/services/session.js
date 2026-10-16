@@ -1,5 +1,9 @@
 import crypto from "node:crypto";
 import { Session } from "../models/session.js";
+export {
+  ACCESS_TOKEN_LIFETIME,
+  REFRESH_TOKEN_LIFETIME,
+} from "../constants/time.js";
 
 const ACCESS_TOKEN_LIFETIME = 15 * 60 * 1000; // 15 хвилин
 const REFRESH_TOKEN_LIFETIME = 30 * 24 * 60 * 60 * 1000; // 30 днів
