@@ -1,2 +1,2 @@
 export { registerUserSchema, loginUserSchema } from "./authValidation.js";
-export 
+export { getUsersSchema } from "./usersValidations.js";

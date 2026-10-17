@@ -5,7 +5,11 @@ export const getUsers = async (_req, res, next) => {
   try {
     const { page = 1, limit = 12 } = _req.query;
     const skip = (page - 1) * limit;
-    const usersQuery = User.find({});
+    const usersQuery = User.find({}).select([
+      "name",
+      "avatarUrl",
+      "articlesAmount",
+    ]);
 
     const [totalUsers, users] = await Promise.all([
       usersQuery.clone().countDocuments(),
@@ -13,7 +17,6 @@ export const getUsers = async (_req, res, next) => {
     ]);
 
     const totalPages = Math.ceil(totalUsers / limit);
-
     res.status(200).json({
       page,
       limit,
