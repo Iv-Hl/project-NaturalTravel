@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { users as ctrl } from "../controllers/index.js";
+import { authenticate } from "../middleware/authenticate.js";
 
 const usersRouter = Router();
 
@@ -8,8 +9,8 @@ usersRouter.get("/", ctrl.getUsers);
 usersRouter.get("/me", ctrl.getCurrentUser);
 usersRouter.get("/me/stories", ctrl.getOwnStories);
 usersRouter.get("/me/saved-stories", ctrl.getSavedStories);
-usersRouter.post("/me/saved-stories/:storyId", ctrl.saveStory);
-usersRouter.delete("/me/saved-stories/:storyId", ctrl.removeSavedStory);
+usersRouter.post("/me/saved-stories/:storyId",  authenticate, ctrl.saveStory);
+usersRouter.delete("/me/saved-stories/:storyId", authenticate, ctrl.removeSavedStory);
 
 usersRouter.get("/:userId", ctrl.getUserById);
 
