@@ -10,8 +10,6 @@ authRouter.post("/register", celebrate(registerUserSchema), ctrl.registerUser);
 
 authRouter.post("/login", celebrate(loginUserSchema), ctrl.loginUser);
 
-authRouter.post("/logout", ctrl.logout);
-
-authRouter.post("/refresh", ctrl.refreshSession);
+authRouter.post("/refresh", ctrl.refreshUserSession);
 
 export default authRouter;
