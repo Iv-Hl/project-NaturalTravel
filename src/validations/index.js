@@ -1,5 +1,2 @@
-import { getUsersSchema } from "./usersValidations.js";
-
-export const usersVal = {
-  getUsers: getUsersSchema,
-};
+export { registerUserSchema, loginUserSchema } from "./authValidation.js";
+export 

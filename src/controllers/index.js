@@ -1,7 +1,7 @@
 import { registerUser } from "./auth/registerUser.js";
 import { loginUser } from "./auth/loginUser.js";
 import { logout } from "./auth/logout.js";
-import { refreshSession } from "./auth/refreshSession.js";
+import { refreshUserSession } from "./auth/refreshSession.js";
 import { getCategories } from "./categories/getCategories.js";
 import { getStories } from "./stories/getStories.js";
 import { getRecommendedStories } from "./stories/getRecommendedStories.js";
@@ -19,7 +19,7 @@ export const auth = {
   registerUser,
   loginUser,
   logout,
-  refreshSession,
+  refreshUserSession,
 };
 
 export const categories = {
