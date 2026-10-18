@@ -4,8 +4,22 @@ export const getStories = async (req, res, next) => {
   try {
     const { page = 1, limit = 10, category, type } = req.query;
 
-    const pageNumber = Math.max(1, parseInt(page, 10));
-    const limitNumber = Math.max(1, parseInt(limit, 10));
+    const pageNumber = parseInt(page, 10);
+    const limitNumber = parseInt(limit, 10);
+
+    if (
+      isNaN(pageNumber) ||
+      pageNumber < 1 ||
+      isNaN(limitNumber) ||
+      limitNumber < 1
+    ) {
+      return res.status(400).json({
+        status: "error",
+        code: 400,
+        message: "Bad Request: Invalid page or limit parameters.",
+      });
+    }
+
     const skip = (pageNumber - 1) * limitNumber;
 
     const filter = {};
@@ -25,6 +39,15 @@ export const getStories = async (req, res, next) => {
     ]);
 
     const totalPages = Math.ceil(totalItems / limitNumber) || 0;
+
+    // Перевірка на випадок, коли запитують неіснуючу сторінку
+    if (pageNumber > totalPages && totalItems > 0) {
+      return res.status(400).json({
+        status: "error",
+        code: 400,
+        message: "Bad Request: Page number exceeds total pages.",
+      });
+    }
 
     res.status(200).json({
       status: "success",
