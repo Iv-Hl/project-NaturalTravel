@@ -1,7 +1,7 @@
 import createHttpError from "http-errors";
 import mongoose from "mongoose";
 
-import { Story } from "../../models/story.js";
+import { Story } from "../../models/Story.js";
 import { Category } from "../../models/Category.js";
 import { uploadImage } from "../../utils/cloudinary.js";
 
@@ -62,7 +62,8 @@ export const createStory = async (req, res, next) => {
       article: normalizedArticle,
       category: existingCategory._id,
       img,
-      owner: req.user._id,
+      ownerId: req.user._id,
+      date: new Date().toISOString().slice(0, 10), // Формат дати YYYY-MM-DD
     });
 
     return res.status(201).json(story);
