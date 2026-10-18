@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import createHttpError from "http-errors";
 import { User } from "../../models/User.js";
+import { Story } from "../../models/Story.js";
 
 export const removeSavedStory = async (req, res, next) => {
   try {
