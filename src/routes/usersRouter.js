@@ -1,9 +1,11 @@
 import { Router } from "express";
+import { celebrate } from "celebrate";
+import { getUsersSchema } from "../validations/index.js";
 import { users as ctrl } from "../controllers/index.js";
 
 const usersRouter = Router();
 
-usersRouter.get("/", ctrl.getUsers);
+usersRouter.get("/", celebrate(getUsersSchema), ctrl.getUsers);
 
 usersRouter.get("/me", ctrl.getCurrentUser);
 usersRouter.get("/me/stories", ctrl.getOwnStories);
