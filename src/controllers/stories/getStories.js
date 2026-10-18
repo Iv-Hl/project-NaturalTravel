@@ -1,17 +1,21 @@
 import { Story } from "../../models/index.js";
+import mongoose from "mongoose";
 
 export const getStories = async (req, res, next) => {
   try {
     const { page = 1, limit = 10, category, type } = req.query;
 
-    const pageNumber = parseInt(page, 10);
-    const limitNumber = parseInt(limit, 10);
+    const pageNumber = Number(page);
+    const limitNumber = Number(limit);
 
     if (
       isNaN(pageNumber) ||
+      !Number.isInteger(pageNumber) ||
       pageNumber < 1 ||
       isNaN(limitNumber) ||
-      limitNumber < 1
+      !Number.isInteger(limitNumber) ||
+      limitNumber < 1 ||
+      limitNumber > 100
     ) {
       return res.status(400).json({
         status: "error",
@@ -24,12 +28,16 @@ export const getStories = async (req, res, next) => {
 
     const filter = {};
     if (category) {
-      filter.category = category;
+      if (mongoose.Types.ObjectId.isValid(category)) {
+        filter.category = new mongoose.Types.ObjectId(category);
+      } else {
+        filter.category = category;
+      }
     }
 
     const sort = {};
     if (type === "popular") {
-      sort.savesCount = -1;
+      sort.rate = -1;
     }
     sort._id = 1;
 
@@ -40,7 +48,6 @@ export const getStories = async (req, res, next) => {
 
     const totalPages = Math.ceil(totalItems / limitNumber) || 0;
 
-    // Перевірка на випадок, коли запитують неіснуючу сторінку
     if (pageNumber > totalPages && totalItems > 0) {
       return res.status(400).json({
         status: "error",
