@@ -13,7 +13,6 @@ import {
   storiesRouter,
 } from "./routes/index.js";
 import { createCorsMiddleware } from "./middleware/corsMiddleware.js";
-import { getSavedStories } from "./controllers/index.js";
 
 const PORT = process.env.PORT ?? 3000;
 
@@ -28,7 +27,6 @@ app.use("/api/auth", authRouter);
 app.use("/api/users", usersRouter);
 app.use("/api/categories", categoriesRouter);
 app.use("/api/stories", storiesRouter);
-app.get("/api/users/me/saved-stories", getSavedStories);
 
 app.use(notFoundHandler);
 app.use(errors());
