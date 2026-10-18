@@ -2,12 +2,13 @@ import createHttpError from "http-errors";
 import mongoose from "mongoose";
 
 import { Story } from "../../models/Story.js";
+import { User } from "../../models/User.js";
 import { Category } from "../../models/Category.js";
 import { uploadImage } from "../../utils/cloudinary.js";
 
 export const createStory = async (req, res, next) => {
   try {
-    const { title, article, category } = req.body;
+    const { title, article, category } = req.body ?? {}; // перевіряємо, чи req.body існує, інакше присвоюємо порожній об'єкт
 
     // Перевіряємо обов'язкові поля
     if (
@@ -64,6 +65,11 @@ export const createStory = async (req, res, next) => {
       img,
       ownerId: req.user._id,
       date: new Date().toISOString().slice(0, 10), // Формат дати YYYY-MM-DD
+    });
+
+    await User.findByIdAndUpdate(req.user._id, {
+      // Оновлюємо кількість статей користувача
+      $inc: { articlesAmount: 1 },
     });
 
     return res.status(201).json(story);

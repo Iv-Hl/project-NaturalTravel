@@ -28,6 +28,11 @@ export const errorHandler = (err, req, res, next) => {
         message: "Only one file is allowed.",
       });
     }
+    if (err.code === "LIMIT_UNEXPECTED_FILE") {
+      return res.status(400).json({
+        message: 'Unexpected file field. Use "image".',
+      });
+    }
   }
 
   res.status(500).json({
