@@ -16,11 +16,23 @@ export const saveStory = async (req, res, next) => {
     if (!storyExists) {
       throw createHttpError(404, "Story not found");
     }
+    
+    const user = await User.findById(userId);
+    if (!user) {
+      throw createHttpError(404, "User not found");
+    }
+    
+     const isAlreadySaved = user.savedArticles.includes(storyId);
 
     const updatedUser = await User.findByIdAndUpdate(userId,
       { $addToSet: { savedArticles: storyId } },
       { new: true }
     );
+    
+    if (!isAlreadySaved) {
+      await Story.findByIdAndUpdate(storyId, { $inc: { rate: 1 } });
+    }
+
     if (!updatedUser) {
       throw createHttpError(404, "User not found");
     }
