@@ -136,8 +136,36 @@ const getRecommendations = async (storyId, query = {}) => {
     Story.collection.countDocuments(filter),
   ]);
 
+  const ownerIds = items.map((story) => story.ownerId).filter(Boolean);
+
+  const authors = ownerIds.length
+    ? await User.collection
+        .find(
+          { _id: { $in: ownerIds } },
+          { projection: { _id: 1, name: 1, avatarUrl: 1 } },
+        )
+        .toArray()
+    : [];
+
+  const authorsMap = new Map(
+    authors.map((author) => [
+      author._id.toString(),
+      {
+        id: author._id.toString(),
+        name: author.name,
+        avatarUrl: author.avatarUrl ?? null,
+      },
+    ]),
+  );
+
+  const itemsWithAuthors = items.map((story) => ({
+    ...story,
+    author: story.ownerId
+      ? (authorsMap.get(story.ownerId.toString()) ?? null)
+      : null,
+  }));
   return {
-    items,
+    items: itemsWithAuthors,
     page,
     limit,
     total,
