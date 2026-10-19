@@ -12,30 +12,20 @@ export const removeSavedStory = async (req, res, next) => {
       throw createHttpError(400, "Invalid story ID format");
     }
 
-     const user = await User.findById(userId);
-    if (!user) {
-      throw createHttpError(404, "User not found");
-    }
-
-    const isSaved = user.savedArticles.includes(storyId);
-
-    const updatedUser = await User.findByIdAndUpdate(
-      userId,
-      { $pull: { savedArticles: storyId } },
-      { new: true }
+    const result = await User.updateOne(
+      { _id: userId },
+      { $pull: { savedArticles: storyId } }
     );
-     
-     if (isSaved) {
+    
+    if (result.modifiedCount > 0) {
       await Story.findByIdAndUpdate(storyId, { $inc: { rate: -1 } });
-    }
-
-    if (!updatedUser) {
-      throw createHttpError(404, "User not found");
-    }
+     }
+    
+    const currentUser = await User.findById(userId);
 
     res.status(200).json({
       message: "Story successfully removed from saved",
-      savedArticles: updatedUser.savedArticles,
+      savedArticles: currentUser ? currentUser.savedArticles : [],
     });
   } catch (error) {
     next(error); 

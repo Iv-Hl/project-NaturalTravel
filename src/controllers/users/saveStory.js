@@ -16,29 +16,21 @@ export const saveStory = async (req, res, next) => {
     if (!storyExists) {
       throw createHttpError(404, "Story not found");
     }
-    
-    const user = await User.findById(userId);
-    if (!user) {
-      throw createHttpError(404, "User not found");
-    }
-    
-     const isAlreadySaved = user.savedArticles.includes(storyId);
 
-    const updatedUser = await User.findByIdAndUpdate(userId,
-      { $addToSet: { savedArticles: storyId } },
-      { new: true }
+    const result = await User.updateOne(
+      { _id: userId },
+      { $addToSet: { savedArticles: storyId } }
     );
-    
-    if (!isAlreadySaved) {
-      await Story.findByIdAndUpdate(storyId, { $inc: { rate: 1 } });
-    }
 
-    if (!updatedUser) {
-      throw createHttpError(404, "User not found");
-    }
+     if (result.modifiedCount > 0) {
+      await Story.findByIdAndUpdate(storyId, { $inc: { rate: 1 } });
+     }
+    
+    const currentUser = await User.findById(userId);
+    
     res.status(200).json({
       message: "Story successfully added to saved",
-      savedArticles: updatedUser.savedArticles,
+      savedArticles: currentUser ? currentUser.savedArticles : [],
     });
   } catch (error) {
     next(error);
