@@ -47,4 +47,5 @@ const storySchema = new mongoose.Schema(
   },
 );
 
-export const Story = mongoose.model("Story", storySchema);
+export const Story =
+  mongoose.models.Story || mongoose.model("Story", storySchema);
