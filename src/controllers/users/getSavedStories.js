@@ -6,12 +6,17 @@ export const getSavedStories = async (req, res) => {
     throw createHttpError(401, "Authentication required");
   }
 
-  const page = Math.max(1, Number.parseInt(req.query.page, 10) || 1);
+  const page = req.query.page === undefined ? 1 : Number(req.query.page);
 
-  const limit = Math.min(
-    50,
-    Math.max(1, Number.parseInt(req.query.limit, 10) || 6),
-  );
+  if (!Number.isInteger(page) || page < 1) {
+    throw createHttpError(400, "Page must be a positive integer");
+  }
+
+  const limit = req.query.limit === undefined ? 6 : Number(req.query.limit);
+
+  if (!Number.isInteger(limit) || limit < 1 || limit > 50) {
+    throw createHttpError(400, "Limit must be an integer from 1 to 50");
+  }
 
   const savedArticles = req.user.savedArticles ?? [];
 
