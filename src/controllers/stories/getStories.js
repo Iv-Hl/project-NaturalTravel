@@ -42,7 +42,11 @@ export const getStories = async (req, res, next) => {
     sort._id = 1;
 
     const [stories, totalItems] = await Promise.all([
-      Story.find(filter).sort(sort).skip(skip).limit(limitNumber),
+      Story.find(filter)
+        .populate("ownerId", "name")
+        .sort(sort)
+        .skip(skip)
+        .limit(limitNumber),
       Story.countDocuments(filter),
     ]);
 
