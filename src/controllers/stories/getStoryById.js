@@ -1,3 +1,11 @@
-export const getStoryById = (_req, res) => {
-  res.status(501).json({ message: "Story details lookup is not implemented yet." });
+import { publicStoriesService } from "../../services/stories/publicStoriesService.js";
+
+export const getStoryById = async (req, res, next) => {
+  try {
+    const story = await publicStoriesService.getById(req.params.storyId);
+
+    return res.status(200).json(story);
+  } catch (error) {
+    return next(error);
+  }
 };
