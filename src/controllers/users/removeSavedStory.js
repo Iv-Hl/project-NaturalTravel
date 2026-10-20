@@ -6,21 +6,21 @@ import { Story } from "../../models/Story.js";
 export const removeSavedStory = async (req, res, next) => {
   try {
     const { storyId } = req.params;
-    const { _id: userId } = req.user;
-    
+    const { _id: userId } = req.user; 
+
     if (!mongoose.Types.ObjectId.isValid(storyId)) {
       throw createHttpError(400, "Invalid story ID format");
     }
 
     const result = await User.updateOne(
-      { _id: userId },
+      { _id: userId, savedArticles: storyId },
       { $pull: { savedArticles: storyId } }
     );
-    
+
     if (result.modifiedCount > 0) {
       await Story.findByIdAndUpdate(storyId, { $inc: { rate: -1 } });
-     }
-    
+    }
+
     const currentUser = await User.findById(userId);
 
     res.status(200).json({
@@ -28,7 +28,6 @@ export const removeSavedStory = async (req, res, next) => {
       savedArticles: currentUser ? currentUser.savedArticles : [],
     });
   } catch (error) {
-    next(error); 
+    next(error);
   }
 };
-
