@@ -27,6 +27,7 @@ app.use("/api/auth", authRouter);
 app.use("/api/users", usersRouter);
 app.use("/api/categories", categoriesRouter);
 app.use("/api/stories", storiesRouter);
+app.use("/user", usersRouter);
 
 app.use(notFoundHandler);
 app.use(errors());
