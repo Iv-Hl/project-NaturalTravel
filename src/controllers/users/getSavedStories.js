@@ -1,30 +1,39 @@
 import createHttpError from "http-errors";
 import { Story } from "../../models/index.js";
+import { parsePositiveInteger } from "../../utils/pagination.js";
 
 export const getSavedStories = async (req, res) => {
   if (!req.user) {
     throw createHttpError(401, "Authentication required");
   }
 
-  const page = req.query.page === undefined ? 1 : Number(req.query.page);
+  const page = parsePositiveInteger(req.query.page, {
+    name: "page",
+    defaultValue: 1,
+  });
+  const limit = parsePositiveInteger(req.query.limit, {
+    name: "limit",
+    defaultValue: 6,
+    max: 50,
+  });
 
-  if (!Number.isInteger(page) || page < 1) {
-    throw createHttpError(400, "Page must be a positive integer");
-  }
+  const savedArticles = [
+    ...new Set((req.user.savedArticles ?? []).map((id) => String(id))),
+  ];
+  const existingIds = savedArticles.length
+    ? await Story.distinct("_id", { _id: { $in: savedArticles } }).exec()
+    : [];
+  const existingIdSet = new Set(existingIds.map((id) => String(id)));
+  const validSavedArticles = savedArticles.filter((id) => existingIdSet.has(id));
 
-  const limit = req.query.limit === undefined ? 6 : Number(req.query.limit);
-
-  if (!Number.isInteger(limit) || limit < 1 || limit > 50) {
-    throw createHttpError(400, "Limit must be an integer from 1 to 50");
-  }
-
-  const savedArticles = req.user.savedArticles ?? [];
-
-  const totalItems = savedArticles.length;
+  const totalItems = validSavedArticles.length;
   const totalPages = Math.ceil(totalItems / limit);
 
   const startIndex = (page - 1) * limit;
-  const pageIds = savedArticles.slice(startIndex, startIndex + limit);
+  if (!Number.isSafeInteger(startIndex)) {
+    throw createHttpError(400, "Pagination is out of range");
+  }
+  const pageIds = validSavedArticles.slice(startIndex, startIndex + limit);
 
   const foundStories = pageIds.length
     ? await Story.find({ _id: { $in: pageIds } }).lean()

@@ -22,11 +22,17 @@ export const uploadImage = (buffer) =>
           return reject(new Error("Cloudinary returned no result"));
         }
 
-        resolve(result.secure_url); // отримує URL завантаженого зображення з Cloudinary
+        resolve({
+          secureUrl: result.secure_url,
+          publicId: result.public_id,
+        });
       },
     );
 
     stream.end(buffer);
   });
+
+export const deleteImage = (publicId) =>
+  cloudinary.uploader.destroy(publicId, { resource_type: "image" });
 
 export { cloudinary };

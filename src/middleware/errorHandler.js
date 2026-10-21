@@ -12,8 +12,13 @@ export const errorHandler = (err, req, res, next) => {
   }
 
   if (err instanceof HttpError) {
-    return res.status(err.status).json({
-      message: STATUS_CODES[err.status] || "Request failed.",
+    const status = err.status || 500;
+    const message = err.expose
+      ? err.message
+      : STATUS_CODES[status] || "Request failed.";
+
+    return res.status(status).json({
+      message: message || STATUS_CODES[status] || "Request failed.",
     });
   }
   if (err instanceof multer.MulterError) {
@@ -33,9 +38,12 @@ export const errorHandler = (err, req, res, next) => {
         message: 'Unexpected file field. Use "image".',
       });
     }
-  }
 
-  res.status(500).json({
+    return res.status(400).json({
+      message: "File upload failed.",
+    });
+  }
+  return res.status(500).json({
     message: "Internal server error.",
   });
 };

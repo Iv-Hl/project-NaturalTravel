@@ -3,11 +3,14 @@ import { clearSessionCookies } from "../../utils/session.js";
 
 export const logout = async (req, res, next) => {
   try {
-    await Session.deleteOne({
-      _id: req.cookies.sessionId,
-      userId: req.user._id,
-      accessToken: req.cookies.accessToken,
-    });
+    const { sessionId, refreshToken } = req.cookies ?? {};
+
+    if (sessionId && refreshToken) {
+      await Session.deleteOne({
+        _id: sessionId,
+        refreshToken,
+      });
+    }
 
     clearSessionCookies(res);
 

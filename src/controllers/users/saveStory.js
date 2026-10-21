@@ -16,13 +16,14 @@ export const saveStory = async (req, res, next) => {
     if (!storyExists) {
       throw createHttpError(404, "Story not found");
     }
-    
     const result = await User.updateOne(
       { _id: userId, savedArticles: { $ne: storyId } },
-      { $addToSet: { savedArticles: storyId } }
+      { $addToSet: { savedArticles: storyId } },
     );
 
-    if (result.modifiedCount > 0) {
+    const isOtherUserStory = !storyExists.ownerId.equals(userId);
+
+    if (result.modifiedCount > 0 && isOtherUserStory) {
       await Story.findByIdAndUpdate(storyId, { $inc: { rate: 1 } });
     }
 
