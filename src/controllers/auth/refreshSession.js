@@ -1,12 +1,15 @@
+import crypto from "node:crypto";
+import mongoose from "mongoose";
 import createHttpError from "http-errors";
 import { Session } from "../../models/session.js";
-import { createSession } from "../../services/index.js";
+import { FIFTEEN_MINUTES, ONE_DAY } from "../../constants/index.js";
 import { setSessionCookies, clearSessionCookies } from "../../utils/index.js";
 
 export const refreshUserSession = async (req, res) => {
   const { sessionId, refreshToken } = req.cookies ?? {};
 
-  if (!sessionId || !refreshToken) {
+  if (!sessionId || !refreshToken || !mongoose.isValidObjectId(sessionId)) {
+    clearSessionCookies(res);
     throw createHttpError(401, "Session not found");
   }
 
@@ -26,9 +29,27 @@ export const refreshUserSession = async (req, res) => {
     throw createHttpError(401, "Session token expired");
   }
 
-  await Session.deleteOne({ _id: session._id });
+  const now = Date.now();
+  const newSession = await Session.findOneAndUpdate(
+    {
+      _id: session._id,
+      refreshToken,
+      refreshTokenValidUntil: { $gt: new Date(now) },
+    },
+    {
+      $set: {
+        accessToken: crypto.randomBytes(32).toString("hex"),
+        refreshToken: crypto.randomBytes(32).toString("hex"),
+        accessTokenValidUntil: new Date(now + FIFTEEN_MINUTES),
+        refreshTokenValidUntil: new Date(now + ONE_DAY),
+      },
+    },
+    { new: true, runValidators: true },
+  );
 
-  const newSession = await createSession(session.userId);
+  if (!newSession) {
+    throw createHttpError(401, "Session not found");
+  }
 
   setSessionCookies(res, newSession);
 
