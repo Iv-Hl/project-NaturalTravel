@@ -1,10 +1,14 @@
 //src/controllers/users/getUsers.js
+import createHttpError from "http-errors";
 import { User } from "../../models/User.js";
 
 export const getUsers = async (_req, res, next) => {
   try {
     const { page = 1, limit = 12 } = _req.query;
     const skip = (page - 1) * limit;
+    if (!Number.isSafeInteger(skip)) {
+      throw createHttpError(400, "Pagination is out of range");
+    }
     const usersQuery = User.find({}).select([
       "name",
       "avatarUrl",

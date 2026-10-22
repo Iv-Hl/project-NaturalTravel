@@ -1,5 +1,6 @@
 import { Story } from "../../models/index.js";
 import mongoose from "mongoose";
+import createHttpError from "http-errors";
 
 export const getStories = async (req, res, next) => {
   try {
@@ -26,13 +27,17 @@ export const getStories = async (req, res, next) => {
 
     const skip = (pageNumber - 1) * limitNumber;
 
+    if (!Number.isSafeInteger(skip)) {
+      throw createHttpError(400, "Pagination is out of range");
+    }
+
     const filter = {};
     if (category) {
-      if (mongoose.Types.ObjectId.isValid(category)) {
-        filter.category = new mongoose.Types.ObjectId(category);
-      } else {
-        filter.category = category;
+      if (!mongoose.isValidObjectId(category)) {
+        throw createHttpError(400, "Invalid category ID");
       }
+
+      filter.category = new mongoose.Types.ObjectId(category);
     }
 
     const sort = {};

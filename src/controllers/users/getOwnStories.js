@@ -1,4 +1,6 @@
+import createHttpError from "http-errors";
 import { Story } from "../../models/Story.js";
+import { parsePositiveInteger } from "../../utils/pagination.js";
 
 export const getOwnStories = async (req, res) => {
   const userId = req.user?._id;
@@ -9,9 +11,20 @@ export const getOwnStories = async (req, res) => {
     });
   }
 
-  const page = Math.max(1, Number(req.query.page) || 1);
-  const limit = Math.max(1, Number(req.query.limit) || 10);
+  const page = parsePositiveInteger(req.query.page, {
+    name: "page",
+    defaultValue: 1,
+  });
+  const limit = parsePositiveInteger(req.query.limit, {
+    name: "limit",
+    defaultValue: 10,
+    max: 50,
+  });
   const skip = (page - 1) * limit;
+
+  if (!Number.isSafeInteger(skip)) {
+    throw createHttpError(400, "Pagination is out of range");
+  }
 
   const filter = { ownerId: userId };
 

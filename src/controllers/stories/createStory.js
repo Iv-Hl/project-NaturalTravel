@@ -4,7 +4,7 @@ import mongoose from "mongoose";
 import { Story } from "../../models/Story.js";
 import { User } from "../../models/User.js";
 import { Category } from "../../models/Category.js";
-import { uploadImage } from "../../utils/cloudinary.js";
+import { deleteImage, uploadImage } from "../../utils/cloudinary.js";
 
 export const createStory = async (req, res, next) => {
   try {
@@ -55,17 +55,31 @@ export const createStory = async (req, res, next) => {
     }
 
     // Завантажуємо зображення в Cloudinary
-    const img = await uploadImage(req.file.buffer);
+    const uploadedImage = await uploadImage(req.file.buffer);
 
     // Створюємо історію з автором із сесії
-    const story = await Story.create({
-      title: normalizedTitle,
-      article: normalizedArticle,
-      category: existingCategory._id,
-      img,
-      ownerId: req.user._id,
-      date: new Date().toISOString().slice(0, 10), // Формат дати YYYY-MM-DD
-    });
+    let story;
+    try {
+      story = await Story.create({
+        title: normalizedTitle,
+        article: normalizedArticle,
+        category: existingCategory._id,
+        img: uploadedImage.secureUrl,
+        ownerId: req.user._id,
+        date: new Date().toISOString().slice(0, 10), // Формат дати YYYY-MM-DD
+      });
+    } catch (error) {
+      try {
+        await deleteImage(uploadedImage.publicId);
+      } catch (cleanupError) {
+        console.error(
+          "Failed to clean up an unlinked Cloudinary image",
+          cleanupError,
+        );
+      }
+
+      throw error;
+    }
 
     await User.findByIdAndUpdate(req.user._id, {
       // Оновлюємо кількість статей користувача

@@ -1,23 +1,17 @@
 import mongoose from "mongoose";
 import { User } from "../../models/User.js";
 import { Story } from "../../models/Story.js";
+import createHttpError from "http-errors";
+import { parsePositiveInteger } from "../../utils/pagination.js";
 
 const NOT_FOUND_MESSAGE = "Такий користувач відсутній";
-
-const parsePositiveInteger = (value, fallback) => {
-  const number = Number.parseInt(value, 10);
-
-  return Number.isInteger(number) && number > 0 ? number : fallback;
-};
 
 export const getUserById = async (req, res, next) => {
   try {
     const { userId } = req.params;
 
     if (!mongoose.isValidObjectId(userId)) {
-      return res.status(404).json({
-        message: NOT_FOUND_MESSAGE,
-      });
+      throw createHttpError(400, "Invalid user ID");
     }
 
     const userObjectId = new mongoose.Types.ObjectId(userId);
@@ -40,8 +34,20 @@ export const getUserById = async (req, res, next) => {
       });
     }
 
-    const page = parsePositiveInteger(req.query.page, 1);
-    const perPage = Math.min(parsePositiveInteger(req.query.perPage, 6), 20);
+    const page = parsePositiveInteger(req.query.page, {
+      name: "page",
+      defaultValue: 1,
+    });
+    const perPage = parsePositiveInteger(req.query.perPage, {
+      name: "perPage",
+      defaultValue: 6,
+      max: 20,
+    });
+
+    const skip = (page - 1) * perPage;
+    if (!Number.isSafeInteger(skip)) {
+      throw createHttpError(400, "Pagination is out of range");
+    }
 
     const filter = { ownerId: userObjectId };
 
@@ -60,7 +66,7 @@ export const getUserById = async (req, res, next) => {
           },
         })
         .sort({ date: -1, _id: -1 })
-        .skip((page - 1) * perPage)
+        .skip(skip)
         .limit(perPage)
         .toArray(),
 
