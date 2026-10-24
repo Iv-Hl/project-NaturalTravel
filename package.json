@@ -20,6 +20,7 @@
   },
   "homepage": "https://github.com/Iv-Hl/project-NaturalTravel#readme",
   "dependencies": {
+    "axios": "^1.20.0",
     "bcrypt": "^6.0.0",
     "celebrate": "^16.0.0",
     "cloudinary": "^2.11.0",
