@@ -12,28 +12,41 @@ export const saveStory = async (req, res, next) => {
       throw createHttpError(400, "Invalid story ID format");
     }
 
-    const storyExists = await Story.findById(storyId);
+    const storyExists = await Story.findById(storyId).select("ownerId rate");
     if (!storyExists) {
       throw createHttpError(404, "Story not found");
     }
+
     const result = await User.updateOne(
       { _id: userId, savedArticles: { $ne: storyId } },
       { $addToSet: { savedArticles: storyId } },
     );
 
     const isOtherUserStory = !storyExists.ownerId.equals(userId);
+    let updatedRate = storyExists.rate;
 
     if (result.modifiedCount > 0 && isOtherUserStory) {
-      await Story.findByIdAndUpdate(storyId, { $inc: { rate: 1 } });
+      const updatedStory = await Story.findByIdAndUpdate(
+        storyId,
+        { $inc: { rate: 1 } },
+        { returnDocument: "after" },
+      ).select("rate");
+
+      if (!updatedStory) throw createHttpError(404, "Story not found");
+      updatedRate = updatedStory.rate;
+    } else {
+      const latestStory = await Story.findById(storyId).select("rate");
+      updatedRate = latestStory?.rate ?? updatedRate;
     }
 
     const currentUser = await User.findById(userId);
 
-    res.status(200).json({
+    return res.status(200).json({
       message: "Story successfully added to saved",
       savedArticles: currentUser ? currentUser.savedArticles : [],
+      rate: updatedRate,
     });
   } catch (error) {
-    next(error);
+    return next(error);
   }
 };
