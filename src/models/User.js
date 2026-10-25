@@ -25,6 +25,10 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: "https://ac.goit.global/fullstack/react/default-avatar.jpg",
     },
+    avatarPublicId: {
+      type: String,
+      select: false,
+    },
     articlesAmount: {
       type: Number,
       default: 0,
