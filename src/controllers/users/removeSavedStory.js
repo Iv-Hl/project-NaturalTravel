@@ -22,7 +22,7 @@ export const removeSavedStory = async (req, res, next) => {
     const isOtherUserStory = story && !story.ownerId.equals(userId);
     let updatedRate = story?.rate ?? 0;
 
-    if (result.modifiedCount > 0 && isOtherUserStory) {
+    if (result.modifiedCount > 0) {
       const updatedStory = await Story.findOneAndUpdate(
         { _id: storyId, rate: { $gt: 0 } },
         { $inc: { rate: -1 } },
