@@ -13,6 +13,7 @@ export const saveStory = async (req, res, next) => {
     }
 
     const storyExists = await Story.findById(storyId).select("ownerId rate");
+
     if (!storyExists) {
       throw createHttpError(404, "Story not found");
     }
@@ -25,25 +26,28 @@ export const saveStory = async (req, res, next) => {
     const isOtherUserStory = !storyExists.ownerId.equals(userId);
     let updatedRate = storyExists.rate;
 
-    if (result.modifiedCount > 0 && isOtherUserStory) {
+    if (result.modifiedCount > 0) {
       const updatedStory = await Story.findByIdAndUpdate(
         storyId,
         { $inc: { rate: 1 } },
         { returnDocument: "after" },
       ).select("rate");
 
-      if (!updatedStory) throw createHttpError(404, "Story not found");
+      if (!updatedStory) {
+        throw createHttpError(404, "Story not found");
+      }
+
       updatedRate = updatedStory.rate;
     } else {
       const latestStory = await Story.findById(storyId).select("rate");
       updatedRate = latestStory?.rate ?? updatedRate;
     }
 
-    const currentUser = await User.findById(userId);
+    const currentUser = await User.findById(userId).select("savedArticles");
 
     return res.status(200).json({
       message: "Story successfully added to saved",
-      savedArticles: currentUser ? currentUser.savedArticles : [],
+      savedArticles: currentUser?.savedArticles ?? [],
       rate: updatedRate,
     });
   } catch (error) {
