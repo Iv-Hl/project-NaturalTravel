@@ -35,7 +35,7 @@ export const errorHandler = (err, req, res, next) => {
     }
     if (err.code === "LIMIT_UNEXPECTED_FILE") {
       return res.status(400).json({
-        message: 'Unexpected file field. Use "image".',
+        message: "Unexpected file field.",
       });
     }
 

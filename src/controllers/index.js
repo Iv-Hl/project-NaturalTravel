@@ -8,6 +8,7 @@ import { getRecommendedStories } from "./stories/getRecommendedStories.js";
 import { getStoryById } from "./stories/getStoryById.js";
 import { createStory } from "./stories/createStory.js";
 import { getCurrentUser } from "./users/getCurrentUser.js";
+import { updateCurrentUser } from "./users/updateCurrentUser.js";
 import { getOwnStories } from "./users/getOwnStories.js";
 import { getSavedStories } from "./users/getSavedStories.js";
 import { saveStory } from "./users/saveStory.js";
@@ -35,6 +36,7 @@ export const stories = {
 
 export const users = {
   getCurrentUser,
+  updateCurrentUser,
   getOwnStories,
   getSavedStories,
   saveStory,

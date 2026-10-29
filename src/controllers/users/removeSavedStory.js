@@ -12,7 +12,7 @@ export const removeSavedStory = async (req, res, next) => {
       throw createHttpError(400, "Invalid story ID format");
     }
 
-    const story = await Story.findById(storyId).select("ownerId");
+    const story = await Story.findById(storyId).select("ownerId rate");
 
     const result = await User.updateOne(
       { _id: userId, savedArticles: storyId },
@@ -20,21 +20,34 @@ export const removeSavedStory = async (req, res, next) => {
     );
 
     const isOtherUserStory = story && !story.ownerId.equals(userId);
+    let updatedRate = story?.rate ?? 0;
 
-    if (result.modifiedCount > 0 && isOtherUserStory) {
-      await Story.updateOne(
+    if (result.modifiedCount > 0) {
+      const updatedStory = await Story.findOneAndUpdate(
         { _id: storyId, rate: { $gt: 0 } },
         { $inc: { rate: -1 } },
-      );
+        { returnDocument: "after" },
+      ).select("rate");
+
+      if (updatedStory) {
+        updatedRate = updatedStory.rate;
+      } else {
+        const latestStory = await Story.findById(storyId).select("rate");
+        updatedRate = latestStory?.rate ?? updatedRate;
+      }
+    } else if (story) {
+      const latestStory = await Story.findById(storyId).select("rate");
+      updatedRate = latestStory?.rate ?? updatedRate;
     }
 
     const currentUser = await User.findById(userId);
 
-    res.status(200).json({
+    return res.status(200).json({
       message: "Story successfully removed from saved",
       savedArticles: currentUser ? currentUser.savedArticles : [],
+      rate: updatedRate,
     });
   } catch (error) {
-    next(error);
+    return next(error);
   }
 };

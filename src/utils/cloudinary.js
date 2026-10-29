@@ -6,11 +6,11 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 // функцію завантаження в Cloudinary
-export const uploadImage = (buffer) =>
+export const uploadImage = (buffer, folder = "natural-travel/stories") =>
   new Promise((resolve, reject) => {
     const stream = cloudinary.uploader.upload_stream(
       {
-        folder: "natural-travel/stories",
+        folder,
         resource_type: "image",
       },
       (error, result) => {
